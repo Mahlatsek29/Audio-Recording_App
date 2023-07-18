@@ -1,20 +1,48 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { LinearGradient } from 'expo-linear-gradient';
+import LoginScreen from './screens/LoginScreen';
+import HomeScreen from './screens/HomeScreen';
+import SignUpScreen from './screens/SignUpScreen';
+import AudioScreen from './screens/AudioScreen';
 
-export default function App() {
+const Stack = createStackNavigator();
+
+const App = () => {
+  const [username, setUsername] = useState('');
+  const handleLogin = (username) => {
+    setUsername(username);
+  };
+  const handleLogout = () => {
+    setUsername('');
+  };
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <LinearGradient colors={['#0A84FF', '#003CFF']} style={{ flex: 1 }}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          {username ? (
+            <>
+              <Stack.Screen name="Home" options={{ title: 'Home' }}>
+                {(props) => (
+                  <HomeScreen {...props} username={username} onLogout={handleLogout} />
+                )}
+              </Stack.Screen>
+              <Stack.Screen name="Audio" component={AudioScreen} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Login" options={{ title: 'Login' }}>
+                {(props) => <LoginScreen {...props} onLogin={handleLogin} />}
+              </Stack.Screen>
+              <Stack.Screen name="SignUp" component={SignUpScreen} />
+            </>
+          )}
+        </Stack.Navigator>
+      </NavigationContainer>
+    </LinearGradient>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
