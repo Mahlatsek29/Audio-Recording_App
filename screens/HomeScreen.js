@@ -1,30 +1,12 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React from "react";
+import { View, Text } from "react-native";
 
-const HomeScreen = ({ navigation, username, onLogout }) => {
+const HomeScreen = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Welcome to the Home Screen, {username}!</Text>
-      <View style={styles.buttonContainer}>
-        <Button title="Logout" onPress={onLogout} color="limegreen" />
-      </View>
+    <View>
+      <Text>HomeScreen</Text>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 20,
-    marginBottom: 20,
-  },
-  buttonContainer: {
-    width: '80%',
-  },
-});
 
 export default HomeScreen;
