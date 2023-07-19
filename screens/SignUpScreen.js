@@ -15,6 +15,12 @@ const SignUpScreen = () => {
     navigation.navigate("Home");
   };
 
+  const handleLogin = () => {
+    // Implement your login logic here
+    console.log("Login clicked!");
+    navigation.navigate("Home");
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.inputView}>
@@ -49,12 +55,15 @@ const SignUpScreen = () => {
           secureTextEntry={true}
           onChangeText={(password) => setPassword(password)}
         />
-      </View>
-      <TouchableOpacity style={styles.signUpBtn} onPress={handleSignUp}>
-        <Text style={styles.signUpText}>SIGN UP</Text>
-      </TouchableOpacity>
     </View>
-  );
+<View style={styles.buttonContainer}>
+  <TouchableOpacity style={styles.signInBtn} onPress={() => navigation.navigate('Login')}>
+    <Text style={styles.signInText}>SIGN UP</Text>
+  </TouchableOpacity>
+</View>
+</View>
+);
+  
 };
 
 const styles = StyleSheet.create({
@@ -71,6 +80,7 @@ const styles = StyleSheet.create({
     height: 45,
     marginBottom: 20,
     alignItems: "center",
+    flexDirection: "row", // Add flexDirection to align TextInput correctly
   },
   TextInput: {
     height: 50,
@@ -78,8 +88,14 @@ const styles = StyleSheet.create({
     padding: 10,
     marginLeft: 20,
   },
-  signUpBtn: {
-    width: "80%",
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "70%",
+    paddingHorizontal: 32,
+  },
+  signInBtn: {
+    width: "70%",
     borderRadius: 25,
     height: 50,
     alignItems: "center",
@@ -87,8 +103,10 @@ const styles = StyleSheet.create({
     marginTop: 40,
     backgroundColor: "#FF1493",
   },
-  signUpText: {
-    color: "white",
+  signInText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 
