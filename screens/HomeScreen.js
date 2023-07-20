@@ -1,12 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import { View, Text, Button, StyleSheet, StatusBar } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import { Audio } from 'expo-av';
 import * as Sharing from 'expo-sharing';
+import { addRecording, setMessage, deleteRecording } from './recordingSlice';
 
 function HomeScreen({ navigation }) {
-  const recording = useRef(null);
-  const [recordings, setRecordings] = useState([]);
-  const [message, setMessage] = useState('');
+  const dispatch = useDispatch();
+  const recordings = useSelector((state) => state.recording.recordings);
+  const message = useSelector((state) => state.recording.message);
+  const recording = React.useRef(null);
 
   async function startRecording() {
     try {
@@ -15,12 +18,13 @@ function HomeScreen({ navigation }) {
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
+
       const recordingObject = new Audio.Recording();
       await recordingObject.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
       recordingObject.setOnRecordingStatusUpdate(onRecordingStatusUpdate);
       await recordingObject.startAsync();
       recording.current = recordingObject;
-      setMessage('Recording...');
+      dispatch(setMessage('Recording...'));
     } catch (error) {
       console.error('Failed to start recording', error);
     }
@@ -44,8 +48,8 @@ function HomeScreen({ navigation }) {
           file: recording.current.getURI(),
         },
       ];
-      setRecordings(updatedRecordings);
-      setMessage('Recording stopped');
+      dispatch(addRecording(updatedRecordings));
+      dispatch(setMessage('Recording stopped'));
     } catch (error) {
       console.error('Failed to stop recording', error);
     } finally {
@@ -65,9 +69,8 @@ function HomeScreen({ navigation }) {
     return `${minutesDisplay}:${secondsDisplay}`;
   }
 
-  function deleteRecording(id) {
-    const updatedRecordings = recordings.filter((recording) => recording.id !== id);
-    setRecordings(updatedRecordings);
+  function onDeleteRecording(id) {
+    dispatch(deleteRecording(id));
   }
 
   function playRecording(sound) {
@@ -95,7 +98,7 @@ function HomeScreen({ navigation }) {
               color="#00BFA5"
             />
             <Button
-              onPress={() => deleteRecording(recordingLine.id)}
+              onPress={() => onDeleteRecording(recordingLine.id)}
               title="Delete"
               color="#FF3D00"
             />
@@ -104,7 +107,6 @@ function HomeScreen({ navigation }) {
       );
     });
   }
-
   function logout() {
     // Perform any necessary cleanup before logout
     // For example, stop recording if it's in progress
@@ -153,4 +155,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen;
+export default HomeScreen
