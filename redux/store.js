@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import recordingReducer from './reducers/recordingSlice';
+import recordingReducer from './recordingSlice';
 
 export const store = configureStore({
   reducer: {

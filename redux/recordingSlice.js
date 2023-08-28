@@ -7,10 +7,11 @@ const recordingSlice = createSlice({
     message: '',
   },
   reducers: {
-    addRecording(state, action) {
-      state.recordings.push(action.payload);
+    addRecording: (state, action) => {
+      const recording = action.payload;
+      state.recordings.push(recording);
     },
-    setMessage(state, action) {
+    setMessage: (state, action) => {
       state.message = action.payload;
     },
     deleteRecording(state, action) {

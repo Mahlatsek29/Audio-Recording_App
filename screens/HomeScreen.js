@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, Button, StyleSheet, StatusBar } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { Audio } from 'expo-av';
 import * as Sharing from 'expo-sharing';
-import { addRecording, setMessage, deleteRecording } from './recordingSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  addRecording,
+  setMessage,
+  deleteRecording,
+  setPlayingSoundUri,
+} from '../redux/recordingSlice';
 
 function HomeScreen({ navigation }) {
   const dispatch = useDispatch();
   const recordings = useSelector((state) => state.recording.recordings);
   const message = useSelector((state) => state.recording.message);
-  const recording = React.useRef(null);
+  const recording = useRef(null);
+
+  useEffect(() => {
+    loadRecordingsFromStorage();
+  }, []);
+
+  async function loadRecordingsFromStorage() {
+    try {
+      const recordingsFromStorage = await AsyncStorage.getItem('recordings');
+      if (recordingsFromStorage) {
+        dispatch(setRecordings(JSON.parse(recordingsFromStorage)));
+      }
+    } catch (error) {
+      console.error('Error loading recordings from AsyncStorage:', error);
+    }
+  }
 
   async function startRecording() {
     try {
@@ -37,18 +58,15 @@ function HomeScreen({ navigation }) {
 
     try {
       await recording.current.stopAndUnloadAsync();
-      const { sound, status } = await recording.current.createNewLoadedSoundAsync();
+      const { status } = await recording.current.createNewLoadedSoundAsync();
 
-      const updatedRecordings = [
-        ...recordings,
-        {
+      dispatch(
+        addRecording({
           id: Date.now().toString(),
-          sound: sound,
           duration: getDurationFormatted(status.durationMillis),
           file: recording.current.getURI(),
-        },
-      ];
-      dispatch(addRecording(updatedRecordings));
+        })
+      );
       dispatch(setMessage('Recording stopped'));
     } catch (error) {
       console.error('Failed to stop recording', error);
@@ -58,7 +76,7 @@ function HomeScreen({ navigation }) {
   }
 
   function onRecordingStatusUpdate(status) {
-    // Do something with the recording status if needed
+    // Handle recording status update if needed
   }
 
   function getDurationFormatted(millis) {
@@ -73,48 +91,45 @@ function HomeScreen({ navigation }) {
     dispatch(deleteRecording(id));
   }
 
-  function playRecording(sound) {
-    if (sound && typeof sound.replayAsync === 'function') {
-      sound.replayAsync();
+  async function playRecording(uri) {
+    try {
+      const sound = new Audio.Sound(); // Create a new instance of Audio.Sound
+      await sound.loadAsync({ uri }); // Load the audio file
+      await sound.playAsync(); // Play the audio
+      dispatch(setPlayingSoundUri(uri));
+    } catch (error) {
+      console.error('Failed to play recording sound', error);
     }
   }
-
-  async function shareRecording(file) {
-    if (file) {
-      await Sharing.shareAsync(file);
-    }
-  }
-
-  function getRecordingLines() {
-    return recordings.map((recordingLine, index) => {
-      return (
-        <View key={recordingLine.id} style={styles.row}>
-          <Text style={styles.fill}>{`Recording ${index + 1} - ${recordingLine.duration}`}</Text>
-          <View style={styles.buttonContainer}>
-            <Button onPress={() => playRecording(recordingLine.sound)} title="Play" color="#007BFF" />
-            <Button
-              onPress={() => shareRecording(recordingLine.file)}
-              title="Share"
-              color="#00BFA5"
-            />
-            <Button
-              onPress={() => onDeleteRecording(recordingLine.id)}
-              title="Delete"
-              color="#FF3D00"
+  
+function getRecordingLines() {
+  return recordings.map((recordingLine, index) => {
+    console.log('Recording URI:', recordingLine.file); // Log the file URI
+    return (
+      <View key={recordingLine.id} style={styles.row}>
+        <Text style={styles.fill}>{`Recording ${index + 1} - ${recordingLine.duration}`}</Text>
+        <View style={styles.buttonContainer}>
+          <Button onPress={() => playRecording(recordingLine.file)} title="Play" color="#007BFF" />
+          <Button
+            onPress={() => shareRecording(recordingLine.file)}
+            title="Share"
+            color="#00BFA5"
+          />
+          <Button
+            onPress={() => onDeleteRecording(recordingLine.id)}
+            title="Delete"
+            color="#FF3D00"
             />
           </View>
         </View>
       );
     });
   }
+
   function logout() {
-    // Perform any necessary cleanup before logout
-    // For example, stop recording if it's in progress
     if (recording.current) {
       stopRecording();
     }
-
-    // Now navigate back to the Welcome screen
     navigation.navigate('Welcome');
   }
 
@@ -155,4 +170,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HomeScreen
+export default HomeScreen;
